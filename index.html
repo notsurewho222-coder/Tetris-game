@@ -28,12 +28,42 @@
       margin-top: 10px;
       font-size: 18px;
     }
+    /* On-screen control styles */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 15px;
+      max-width: 240px;
+    }
+    .btn {
+      background: #333;
+      color: white;
+      padding: 12px;
+      margin: 5px;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      flex: 1 1 40%;
+      min-width: 80px;
+    }
+    .btn:active {
+      background: #555;
+    }
   </style>
 </head>
 <body>
   <h1>🎮 Tetris</h1>
   <canvas id="tetris" width="240" height="400"></canvas>
   <div class="score">Score: <span id="score">0</span></div>
+
+  <!-- On-screen controls -->
+  <div class="controls">
+    <button class="btn" id="left">⬅️</button>
+    <button class="btn" id="right">➡️</button>
+    <button class="btn" id="rotate">🔄</button>
+    <button class="btn" id="down">⬇️</button>
+  </div>
 
   <script>
     const canvas = document.getElementById('tetris');
@@ -255,6 +285,7 @@
       score: 0,
     };
 
+    // Keyboard controls
     document.addEventListener('keydown', event => {
       if (event.keyCode === 37) {
         playerMove(-1);
@@ -268,6 +299,12 @@
         playerRotate(1);
       }
     });
+
+    // Touch controls
+    document.getElementById('left').addEventListener('click', () => playerMove(-1));
+    document.getElementById('right').addEventListener('click', () => playerMove(1));
+    document.getElementById('rotate').addEventListener('click', () => playerRotate(1));
+    document.getElementById('down').addEventListener('click', () => playerDrop());
 
     playerReset();
     updateScore();
