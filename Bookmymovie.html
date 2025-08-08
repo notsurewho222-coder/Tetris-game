@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookmymovie - Harish</title> <!-- Updated Title -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212; /* Deeper dark background */
+            color: #e0e0e0; /* Softer light text */
+            overflow-x: hidden; /* Prevent horizontal scroll due to animations */
+        }
+        .scroll-container {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        .scroll-container::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        /* Custom subtle fade-in animation for sections */
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Delay for sequential animations */
+        .header-anim { animation-delay: 0.1s; }
+        .search-anim { animation-delay: 0.3s; }
+        .movies-anim { animation-delay: 0.5s; }
+        .theaters-anim { animation-delay: 0.7s; }
+        .nav-anim { animation-delay: 0.9s; }
+        .details-anim { animation-delay: 0.1s; } /* For movie details page content */
+        .seats-anim { animation-delay: 0.1s; } /* For seat selection page content */
+        .payment-anim { animation-delay: 0.1s; } /* For payment page content */
+
+
+        /* Custom button hover effect for navigation */
+        .nav-button:hover svg, .nav-button:hover span {
+            transform: translateY(-2px);
+            color: #63b3ed; /* Tailwind blue-300 equivalent for hover */
+            transition: all 0.2s ease-in-out;
+        }
+        .nav-button.active svg, .nav-button.active span {
+            color: #3b82f6; /* Tailwind blue-500 equivalent for active */
+        }
+
+        /* Seat Styling */
+        .seat {
+            width: 32px;
+            height: 32px;
+            background-color: #2d3748; /* Gray-800 */
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: #a0aec0; /* Gray-400 */
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .seat:hover:not(.booked):not(.selected) {
+            background-color: #4a5568; /* Gray-700 */
+            transform: scale(1.05);
+        }
+        .seat.selected {
+            background-color: #3b82f6; /* Blue-500 */
+            color: white;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+        }
+        .seat.booked {
+            background-color: #c53030; /* Red-600 */
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.7;
+            box-shadow: none;
+        }
+
+        /* Payment Option Styling */
+        .payment-option {
+            background-color: #2d3748;
+            border: 1px solid #4a5568;
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .payment-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border-color: #3b82f6;
+        }
+        .payment-option.selected-payment {
+            border-color: #3b82f6;
+            background-color: #1a202c;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+        }
+
+        /* Input field styling */
+        .payment-input {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #1f2937; /* Gray-800 */
+            border: 1px solid #4a5568;
+            color: #e0e0e0;
+            margin-top: 0.5rem;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .payment-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+        }
+        .input-group {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-gray-800 p-4 shadow-2xl rounded-b-3xl flex items-center justify-between mx-auto w-[92%] sm:w-11/12 mt-4 fade-in-section header-anim">
+        <div class="flex items-center space-x-2">
+            <svg class="w-9 h-9 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H5V8h14v10z"/>
+            </svg>
+            <h1 class="text-3xl font-extrabold text-blue-400 tracking-wide">Bookmymovie - Harish</h1> <!-- Updated App Name -->
+        </div>
+        <div class="flex items-center space-x-5">
+            <svg class="w-7 h-7 text-gray-300 cursor-pointer transform hover:scale-110 transition duration-200" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.82 6-3.82s5.97 1.83 6 3.82c-1.29 1.94-3.5 3.22-6 3.22z"/>
+            </svg>
+            <svg class="w-7 h-7 text-gray-300 cursor-pointer transform hover:scale-110 transition duration-200" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M4 12h16M4 6h16M4 18h16"/>
+            </svg>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow p-6 md:p-8">
+
+        <!-- Homepage Content (Initially visible) -->
+        <div id="homepage-content">
+            <!-- Search Bar -->
+            <div class="mb-8 w-[92%] sm:w-11/12 mx-auto fade-in-section search-anim">
+                <div class="relative">
+                    <input type="text" placeholder="Search for movies, events, or sports"
+                           class="w-full p-3 pl-12 rounded-2xl bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-3 focus:ring-blue-500 focus:border-transparent shadow-lg transition duration-300 ease-in-out transform focus:scale-[1.01]">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trending Movies -->
+            <section class="mb-10 w-[92%] sm:w-11/12 mx-auto fade-in-section movies-anim">
+                <h2 class="text-2xl font-bold mb-4 text-blue-300">Trending Movies</h2>
+                <div class="flex overflow-x-auto space-x-6 pb-4 scroll-container">
+                    <!-- Movie Card 1: Coolie -->
+                    <div class="movie-card flex-shrink-0 w-40 md:w-48 bg-gray-800 rounded-xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out cursor-pointer" data-movie-title="Coolie">
+                        <img src="https://placehold.co/400x600/6366f1/ffffff?text=Coolie" alt="Coolie Poster" class="w-full h-60 md:h-72 object-cover rounded-t-xl border-b-2 border-blue-600">
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-white truncate">Coolie</h3>
+                            <p class="text-sm text-gray-400 mt-1">Action, Drama</p>
+                        </div>
+                    </div>
+                    <!-- Movie Card 2: War 2 -->
+                    <div class="movie-card flex-shrink-0 w-40 md:w-48 bg-gray-800 rounded-xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out cursor-pointer" data-movie-title="War 2">
+                        <img src="https://placehold.co/400x600/4f46e5/ffffff?text=War+2" alt="War 2 Poster" class="w-full h-60 md:h-72 object-cover rounded-t-xl border-b-2 border-purple-600">
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-white truncate">War 2</h3>
+                            <p class="text-sm text-gray-400 mt-1">Action, Thriller</p>
+                        </div>
+                    </div>
+                    <!-- Movie Card 3: Superman -->
+                    <div class="movie-card flex-shrink-0 w-40 md:w-48 bg-gray-800 rounded-xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out cursor-pointer" data-movie-title="Superman">
+                        <img src="https://placehold.co/400x600/3b82f6/ffffff?text=Superman" alt="Superman Poster" class="w-full h-60 md:h-72 object-cover rounded-t-xl border-b-2 border-green-600">
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-white truncate">Superman</h3>
+                            <p class="text-sm text-gray-400 mt-1">Action, Sci-Fi</p>
+                        </div>
+                    </div>
+                    <!-- Movie Card 4: F1 -->
+                    <div class="movie-card flex-shrink-0 w-40 md:w-48 bg-gray-800 rounded-xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out cursor-pointer" data-movie-title="F1">
+                        <img src="https://placehold.co/400x600/60a5fa/ffffff?text=F1" alt="F1 Poster" class="w-full h-60 md:h-72 object-cover rounded-t-xl border-b-2 border-red-600">
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-white truncate">F1</h3>
+                            <p class="text-sm text-gray-400 mt-1">Action, Sports</p>
+                        </div>
+                    </div>
+                    <!-- Movie Card 5: Fantastic Four -->
+                    <div class="movie-card flex-shrink-0 w-40 md:w-48 bg-gray-800 rounded-xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out cursor-pointer" data-movie-title="Fantastic Four">
+                        <img src="https://placehold.co/400x600/34d399/ffffff?text=Fantastic+Four" alt="Fantastic Four Poster" class="w-full h-60 md:h-72 object-cover rounded-t-xl border-b-2 border-yellow-600">
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-white truncate">Fantastic Four</h3>
+                            <p class="text-sm text-gray-400 mt-1">Action, Fantasy</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Theaters Near You -->
+            <section class="mb-10 w-[92%] sm:w-11/12 mx-auto fade-in-section theaters-anim">
+                <h2 class="text-2xl font-bold mb-4 text-blue-300">Theaters Near You</h2>
+                <div class="flex flex-col space-y-4">
+                    <!-- Theater Card 1 -->
+                    <div class="bg-gray-800 p-4 rounded-xl shadow-xl flex items-center space-x-4 hover:shadow-2xl transform hover:scale-[1.02] transition duration-300 ease-in-out cursor-pointer">
+                        <img src="https://placehold.co/80x80/6b7280/ffffff?text=Cineplex" alt="Cineplex Grand Logo" class="w-20 h-20 object-cover rounded-lg border-2 border-blue-500">
+                        <div>
+                            <h3 class="text-xl font-semibold text-white">Cineplex Grand</h3>
+                            <p class="text-gray-400">City Center | Premium Sound</p>
+                        </div>
+                    </div>
+                    <!-- Theater Card 2 -->
+                    <div class="bg-gray-800 p-4 rounded-xl shadow-xl flex items-center space-x-4 hover:shadow-2xl transform hover:scale-[1.02] transition duration-300 ease-in-out cursor-pointer">
+                        <img src="https://placehold.co/80x80/4b5563/ffffff?text=Galaxy" alt="Galaxy Screens Logo" class="w-20 h-20 object-cover rounded-lg border-2 border-purple-500">
+                        <div>
+                            <h3 class="text-xl font-semibold text-white">Galaxy Screens</h3>
+                            <p class="text-gray-400">Northside Mall | Luxury Recliners</p>
+                        </div>
+                    </div>
+                    <!-- Theater Card 3 -->
+                    <div class="bg-gray-800 p-4 rounded-xl shadow-xl flex items-center space-x-4 hover:shadow-2xl transform hover:scale-[1.02] transition duration-300 ease-in-out cursor-pointer">
+                        <img src="https://placehold.co/80x80/374151/ffffff?text=Star" alt="Star View Cinemas Logo" class="w-20 h-20 object-cover rounded-lg border-2 border-green-500">
+                        <div>
+                            <h3 class="text-xl font-semibold text-white">Star View Cinemas</h3>
+                            <p class="text-gray-400">Suburbia | Budget Friendly</p>
+                        </div>
+                    </div>
+                     <!-- Theater Card 4 -->
+                    <div class="bg-gray-800 p-4 rounded-xl shadow-xl flex items-center space-x-4 hover:shadow-2xl transform hover:scale-[1.02] transition duration-300 ease-in-out cursor-pointer">
+                        <img src="https://placehold.co/80x80/1f2937/ffffff?text=Royal" alt="The Royal Theater Logo" class="w-20 h-20 object-cover rounded-lg border-2 border-red-500">
+                        <div>
+                            <h3 class="text-xl font-semibold text-white">The Royal Theater</h3>
+                            <p class="text-gray-400">Heritage Square | Historic Charm</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Movie Details & Booking Page (Initially hidden) -->
+        <div id="movie-details-page" class="hidden">
+            <button id="back-to-movies-btn" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center mb-6 transition duration-200">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/>
+                </svg>
+                Back to Movies
+            </button>
+            <h2 id="movie-title-header" class="text-3xl font-bold mb-6 text-blue-300 fade-in-section details-anim"></h2>
+
+            <section class="mb-8 fade-in-section details-anim">
+                <h3 class="text-xl font-semibold mb-4 text-blue-200">Select Theater and Show Time</h3>
+                <div id="theaters-showtimes-list" class="flex flex-col space-y-6">
+                    <!-- Theater and showtimes will be dynamically added here -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Seat Selection Page (Initially hidden) -->
+        <div id="seat-selection-page" class="hidden">
+            <button id="back-to-showtimes-btn" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center mb-6 transition duration-200">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/>
+                </svg>
+                Back to Showtimes
+            </button>
+            <h2 id="seat-selection-movie-title" class="text-3xl font-bold mb-2 text-blue-300 fade-in-section seats-anim"></h2>
+            <p id="seat-selection-details" class="text-gray-400 text-lg mb-6 fade-in-section seats-anim"></p>
+
+            <section class="mb-8 p-6 bg-gray-800 rounded-xl shadow-xl fade-in-section seats-anim">
+                <h3 class="text-xl font-semibold mb-4 text-blue-200">Select Your Seats</h3>
+                <!-- Screen Indicator -->
+                <div class="w-full bg-gray-700 text-center py-2 mb-8 rounded-b-lg text-gray-300 font-medium tracking-wider shadow-lg">
+                    SCREEN THIS WAY
+                </div>
+
+                <!-- Seat Map -->
+                <div id="seat-map" class="grid gap-2 justify-center mx-auto" style="grid-template-columns: repeat(10, minmax(0, 1fr)); max-width: 400px;">
+                    <!-- Seats will be dynamically added here -->
+                </div>
+
+                <!-- Seat Legend -->
+                <div class="flex justify-center space-x-6 mt-8 text-sm">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 rounded-sm bg-gray-800 border border-gray-600 mr-2"></div>
+                        <span>Available</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 rounded-sm bg-blue-500 mr-2"></div>
+                        <span>Selected</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 rounded-sm bg-red-600 mr-2"></div>
+                        <span>Booked</span>
+                    </div>
+                </div>
+
+                <div class="text-center mt-8">
+                    <p class="text-lg font-semibold text-white mb-4">Total Price: <span id="total-price">₹0.00</span></p>
+                    <button id="confirm-booking-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition duration-300 transform hover:scale-105">
+                        Confirm Booking
+                    </button>
+                    <!-- Error Message Box -->
+                    <div id="seat-selection-error-message" class="hidden mt-4 p-4 rounded-lg bg-red-700 text-white shadow-md">
+                        Please select at least one seat.
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Payment Page (Initially hidden) -->
+        <div id="payment-page" class="hidden">
+            <button id="back-to-seats-btn" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center mb-6 transition duration-200">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/>
+                </svg>
+                Back to Seats
+            </button>
+            <h2 class="text-3xl font-bold mb-6 text-blue-300 fade-in-section payment-anim">Complete Your Booking</h2>
+
+            <section class="mb-8 p-6 bg-gray-800 rounded-xl shadow-xl fade-in-section payment-anim">
+                <h3 class="text-xl font-semibold mb-4 text-blue-200">Order Summary</h3>
+                <div class="space-y-2 mb-6 text-gray-300">
+                    <p><strong>Movie:</strong> <span id="payment-movie-title"></span></p>
+                    <p><strong>Theater:</strong> <span id="payment-theater-name"></span></p>
+                    <p><strong>Showtime:</strong> <span id="payment-showtime"></span></p>
+                    <p><strong>Seats:</strong> <span id="payment-selected-seats"></span></p>
+                    <p class="text-2xl font-bold text-white mt-4">Total Amount: <span id="payment-total-amount"></span></p>
+                </div>
+
+                <h3 class="text-xl font-semibold mb-4 text-blue-200">Choose Payment Method</h3>
+                <div class="flex flex-col space-y-4">
+                    <div class="payment-option" data-payment-method="upi">
+                        <span class="text-lg font-medium text-white">UPI / QR Code</span>
+                        <svg class="w-6 h-6 text-green-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15.5V13H8v-2h3V7.5L15.5 12 11 16.5z"/></svg>
+                    </div>
+                    <div class="payment-option" data-payment-method="card">
+                        <span class="text-lg font-medium text-white">Credit / Debit Card</span>
+                        <svg class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4V8h16v10z"/></svg>
+                    </div>
+                    <div class="payment-option" data-payment-method="netbanking">
+                        <span class="text-lg font-medium text-white">Net Banking</span>
+                        <svg class="w-6 h-6 text-purple-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v4h-2zm0 6h2v2h-2z"/></svg>
+                    </div>
+                    <div class="payment-option" data-payment-method="wallet">
+                        <span class="text-lg font-medium text-white">Wallets</span>
+                        <svg class="w-6 h-6 text-orange-400" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4V8h16v10zM12 10.5c-.83 0-1.5-.67-1.5-1.5S11.17 7.5 12 7.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                    </div>
+                </div>
+
+                <!-- Payment Details Forms (Initially hidden) -->
+                <div id="payment-details-forms" class="mt-6">
+                    <!-- UPI Details -->
+                    <div id="upi-details" class="hidden input-group">
+                        <label for="upi-id" class="block text-gray-300 text-sm font-medium mb-2">UPI ID</label>
+                        <input type="text" id="upi-id" placeholder="yourname@bank" class="payment-input">
+                    </div>
+
+                    <!-- Card Details -->
+                    <div id="card-details" class="hidden input-group">
+                        <label for="card-number" class="block text-gray-300 text-sm font-medium mb-2">Card Number</label>
+                        <input type="text" id="card-number" placeholder="XXXX XXXX XXXX XXXX" class="payment-input">
+                        <div class="flex space-x-4 mt-4">
+                            <div class="w-1/2">
+                                <label for="expiry-date" class="block text-gray-300 text-sm font-medium mb-2">Expiry Date (MM/YY)</label>
+                                <input type="text" id="expiry-date" placeholder="MM/YY" class="payment-input">
+                            </div>
+                            <div class="w-1/2">
+                                <label for="cvv" class="block text-gray-300 text-sm font-medium mb-2">CVV</label>
+                                <input type="text" id="cvv" placeholder="XXX" class="payment-input">
+                            </div>
+                        </div>
+                        <label for="cardholder-name" class="block text-gray-300 text-sm font-medium mb-2 mt-4">Cardholder Name</label>
+                        <input type="text" id="cardholder-name" placeholder="Name on card" class="payment-input">
+                    </div>
+
+                    <!-- Net Banking Details -->
+                    <div id="netbanking-details" class="hidden input-group">
+                        <label for="bank-select" class="block text-gray-300 text-sm font-medium mb-2">Select Your Bank</label>
+                        <select id="bank-select" class="payment-input">
+                            <option value="">-- Select Bank --</option>
+                            <option value="sbi">State Bank of India</option>
+                            <option value="hdfc">HDFC Bank</option>
+                            <option value="icici">ICICI Bank</option>
+                            <option value="axis">Axis Bank</option>
+                            <option value="kotak">Kotak Mahindra Bank</option>
+                        </select>
+                    </div>
+
+                    <!-- Wallet Details -->
+                    <div id="wallet-details" class="hidden input-group">
+                        <label for="wallet-select" class="block text-gray-300 text-sm font-medium mb-2">Select Wallet Provider</label>
+                        <select id="wallet-select" class="payment-input">
+                            <option value="">-- Select Wallet --</option>
+                            <option value="paytm">Paytm</option>
+                            <option value="gpay">Google Pay</option>
+                            <option value="phonepe">PhonePe</option>
+                            <option value="amazonpay">Amazon Pay</option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="text-center mt-8">
+                    <button id="pay-now-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition duration-300 transform hover:scale-105">
+                        Pay Now
+                    </button>
+                    <div id="payment-status-message" class="hidden mt-4 p-4 rounded-lg text-white shadow-md"></div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bg-gray-800 p-4 shadow-inner rounded-t-3xl flex justify-around items-center mx-auto w-[92%] sm:w-11/12 mb-4 fade-in-section nav-anim">
+        <button class="flex flex-col items-center text-blue-400 nav-button active">
+            <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+            <span class="text-xs mt-1 font-medium">Home</span>
+        </button>
+        <button class="flex flex-col items-center text-gray-400 nav-button">
+            <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            <span class="text-xs mt-1 font-medium">Search</span>
+        </button>
+        <button class="flex flex-col items-center text-gray-400 nav-button">
+            <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 3h-2V1h-2v2H7V1H5v2H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V8h16v11z"/>
+            </svg>
+            <span class="text-xs mt-1 font-medium">Bookings</span>
+        </button>
+        <button class="flex flex-col items-center text-gray-400 nav-button">
+            <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.82 6-3.82s5.97 1.83 6 3.82c-1.29 1.94-3.5 3.22-6 3.22z"/>
+            </svg>
+            <span class="text-xs mt-1 font-medium">Profile</span>
+        </button>
+    </nav>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const homepageContent = document.getElementById('homepage-content');
+            const movieDetailsPage = document.getElementById('movie-details-page');
+            const seatSelectionPage = document.getElementById('seat-selection-page');
+            const paymentPage = document.getElementById('payment-page');
+
+            const movieTitleHeader = document.getElementById('movie-title-header');
+            const backToMoviesBtn = document.getElementById('back-to-movies-btn');
+            const theatersShowtimesList = document.getElementById('theaters-showtimes-list');
+
+            const seatSelectionMovieTitle = document.getElementById('seat-selection-movie-title');
+            const seatSelectionDetails = document.getElementById('seat-selection-details');
+            const backToShowtimesBtn = document.getElementById('back-to-showtimes-btn');
+            const seatMap = document.getElementById('seat-map');
+            const totalPriceElement = document.getElementById('total-price');
+            const confirmBookingBtn = document.getElementById('confirm-booking-btn');
+            const seatSelectionErrorMessage = document.getElementById('seat-selection-error-message');
+
+            const backToSeatsBtn = document.getElementById('back-to-seats-btn');
+            const paymentMovieTitle = document.getElementById('payment-movie-title');
+            const paymentTheaterName = document.getElementById('payment-theater-name');
+            const paymentShowtime = document.getElementById('payment-showtime');
+            const paymentSelectedSeats = document.getElementById('payment-selected-seats');
+            const paymentTotalAmount = document.getElementById('payment-total-amount');
+            const payNowBtn = document.getElementById('pay-now-btn');
+            const paymentStatusMessage = document.getElementById('payment-status-message');
+            const paymentOptions = document.querySelectorAll('.payment-option');
+
+            // Payment Details Inputs
+            const upiDetailsDiv = document.getElementById('upi-details');
+            const upiIdInput = document.getElementById('upi-id');
+            const cardDetailsDiv = document.getElementById('card-details');
+            const cardNumberInput = document.getElementById('card-number');
+            const expiryDateInput = document.getElementById('expiry-date');
+            const cvvInput = document.getElementById('cvv');
+            const cardholderNameInput = document.getElementById('cardholder-name');
+            const netbankingDetailsDiv = document.getElementById('netbanking-details');
+            const bankSelect = document.getElementById('bank-select');
+            const walletDetailsDiv = document.getElementById('wallet-details');
+            const walletSelect = document.getElementById('wallet-select');
+
+
+            const movieCards = document.querySelectorAll('.movie-card');
+
+            let selectedSeats = new Set();
+            const seatPrice = 150.00; // Example price per seat in INR
+            let selectedPaymentMethod = '';
+
+            // Global variables to store current selection
+            let currentMovieTitle = '';
+            let currentTheaterName = '';
+            let currentShowtime = '';
+            let currentTotalPrice = 0;
+            let currentSelectedSeatsDisplay = '';
+
+            const theaters = [
+                { name: "Cineplex Grand", location: "City Center", features: "Premium Sound" },
+                { name: "Galaxy Screens", location: "Northside Mall", features: "Luxury Recliners" },
+                { name: "Star View Cinemas", location: "Suburbia", features: "Budget Friendly" },
+                { name: "The Royal Theater", location: "Heritage Square", features: "Historic Charm" }
+            ];
+
+            // Function to generate random showtimes
+            function generateShowtimes() {
+                const showtimes = [];
+                const possibleTimes = ['10:00 AM', '01:30 PM', '04:00 PM', '07:15 PM', '10:30 PM'];
+                // Randomly pick a few from possibleTimes
+                for (let i = 0; i < 3; i++) {
+                    showtimes.push(possibleTimes[Math.floor(Math.random() * possibleTimes.length)]);
+                }
+                // Ensure uniqueness and sort
+                return [...new Set(showtimes)].sort((a, b) => {
+                    const [hA, mA, ampmA] = a.split(/:| /);
+                    const [hB, mB, ampmB] = b.split(/:| /);
+                    let hourA = parseInt(hA);
+                    let hourB = parseInt(hB);
+                    if (ampmA === 'PM' && hourA !== 12) hourA += 12;
+                    if (ampmA === 'AM' && hourA === 12) hourA = 0; // Midnight (12 AM)
+                    if (ampmB === 'PM' && hourB !== 12) hourB += 12;
+                    if (ampmB === 'AM' && hourB === 12) hourB = 0; // Midnight (12 AM)
+
+                    if (hourA !== hourB) return hourA - hourB;
+                    return parseInt(mA) - parseInt(mB);
+                });
+            }
+
+            // Function to transition pages
+            function transitionPage(hidePage, showPage, animateClass) {
+                hidePage.classList.add('hidden');
+                hidePage.classList.remove('fade-in-section'); // Remove animation to reset
+
+                showPage.classList.remove('hidden');
+                showPage.classList.add('fade-in-section', animateClass);
+                showPage.style.animation = `fadeIn 0.6s ease-out forwards`;
+            }
+
+            // Function to show movie details page
+            function showMovieDetails(movieTitle) {
+                currentMovieTitle = movieTitle; // Store movie title
+                transitionPage(homepageContent, movieDetailsPage, 'details-anim');
+
+                movieTitleHeader.textContent = movieTitle;
+                theatersShowtimesList.innerHTML = ''; // Clear previous content
+
+                theaters.forEach(theater => {
+                    const showtimes = generateShowtimes();
+                    const showtimesHtml = showtimes.map(time => `
+                        <button class="showtime-btn bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-md transition duration-200 transform hover:scale-105"
+                                data-theater-name="${theater.name}" data-showtime="${time}">
+                            ${time}
+                        </button>
+                    `).join('');
+
+                    const theaterCard = `
+                        <div class="bg-gray-800 p-5 rounded-xl shadow-xl border border-gray-700 flex flex-col space-y-4">
+                            <h4 class="text-xl font-semibold text-white">${theater.name}</h4>
+                            <p class="text-gray-400 text-sm">${theater.location} | ${theater.features}</p>
+                            <div class="flex flex-wrap gap-3 mt-3">
+                                ${showtimesHtml}
+                            </div>
+                        </div>
+                    `;
+                    theatersShowtimesList.innerHTML += theaterCard;
+                });
+
+                // Add event listeners for new showtime buttons
+                document.querySelectorAll('.showtime-btn').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const theaterName = event.target.dataset.theaterName;
+                        const showtime = event.target.dataset.showtime;
+                        showSeatSelectionPage(currentMovieTitle, theaterName, showtime);
+                    });
+                });
+            }
+
+            // Function to show homepage
+            function showHomepage() {
+                transitionPage(movieDetailsPage, homepageContent, 'header-anim');
+                seatSelectionPage.classList.add('hidden'); // Ensure seat page is hidden
+                paymentPage.classList.add('hidden'); // Ensure payment page is hidden
+            }
+
+            // Function to show seat selection page
+            function showSeatSelectionPage(movieTitle, theaterName, showtime) {
+                currentTheaterName = theaterName;
+                currentShowtime = showtime;
+
+                transitionPage(movieDetailsPage, seatSelectionPage, 'seats-anim');
+
+                seatSelectionMovieTitle.textContent = movieTitle;
+                seatSelectionDetails.textContent = `${theaterName} - ${showtime}`;
+                generateSeatMap();
+            }
+
+            // Function to generate the seat map
+            function generateSeatMap() {
+                seatMap.innerHTML = ''; // Clear previous seats
+                selectedSeats.clear(); // Clear selected seats for new booking
+                updateTotalPrice();
+                seatSelectionErrorMessage.classList.add('hidden'); // Hide any previous error
+
+                const rows = 8;
+                const cols = 10;
+                const bookedSeats = new Set(); // Simulate some booked seats
+                // Make a few random seats booked each time
+                for (let i = 0; i < 15; i++) {
+                    const row = String.fromCharCode(65 + Math.floor(Math.random() * rows));
+                    const col = Math.floor(Math.random() * cols) + 1;
+                    bookedSeats.add(`${row}${col}`);
+                }
+
+                for (let r = 0; r < rows; r++) {
+                    const rowChar = String.fromCharCode(65 + r); // A, B, C...
+                    for (let c = 1; c <= cols; c++) {
+                        const seatId = `${rowChar}${c}`;
+                        const isBooked = bookedSeats.has(seatId);
+                        const seatDiv = document.createElement('div');
+                        seatDiv.classList.add('seat');
+                        if (isBooked) {
+                            seatDiv.classList.add('booked');
+                        } else {
+                            seatDiv.addEventListener('click', () => toggleSeatSelection(seatDiv, seatId));
+                        }
+                        seatDiv.textContent = seatId;
+                        seatMap.appendChild(seatDiv);
+                    }
+                }
+            }
+
+            function toggleSeatSelection(seatDiv, seatId) {
+                if (seatDiv.classList.contains('booked')) {
+                    return; // Cannot select booked seats
+                }
+
+                if (selectedSeats.has(seatId)) {
+                    selectedSeats.delete(seatId);
+                    seatDiv.classList.remove('selected');
+                } else {
+                    selectedSeats.add(seatId);
+                    seatDiv.classList.add('selected');
+                }
+                updateTotalPrice();
+            }
+
+            function updateTotalPrice() {
+                const total = selectedSeats.size * seatPrice;
+                currentTotalPrice = total; // Store total price
+                totalPriceElement.textContent = `₹${total.toFixed(2)}`;
+                currentSelectedSeatsDisplay = selectedSeats.size > 0 ? Array.from(selectedSeats).join(', ') : 'None';
+            }
+
+            // Function to show payment page
+            function showPaymentPage() {
+                transitionPage(seatSelectionPage, paymentPage, 'payment-anim');
+
+                paymentMovieTitle.textContent = currentMovieTitle;
+                paymentTheaterName.textContent = currentTheaterName;
+                paymentShowtime.textContent = currentShowtime;
+                paymentSelectedSeats.textContent = currentSelectedSeatsDisplay;
+                paymentTotalAmount.textContent = `₹${currentTotalPrice.toFixed(2)}`;
+
+                // Reset payment selection and status message
+                paymentOptions.forEach(option => option.classList.remove('selected-payment'));
+                selectedPaymentMethod = '';
+                paymentStatusMessage.classList.add('hidden');
+                // Hide all payment detail forms initially
+                hideAllPaymentDetailForms();
+            }
+
+            function hideAllPaymentDetailForms() {
+                upiDetailsDiv.classList.add('hidden');
+                cardDetailsDiv.classList.add('hidden');
+                netbankingDetailsDiv.classList.add('hidden');
+                walletDetailsDiv.classList.add('hidden');
+            }
+
+            // Add click listeners to movie cards
+            movieCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const movieTitle = card.dataset.movieTitle;
+                    showMovieDetails(movieTitle);
+                });
+            });
+
+            // Add click listener to back buttons
+            backToMoviesBtn.addEventListener('click', showHomepage);
+            backToShowtimesBtn.addEventListener('click', () => showMovieDetails(currentMovieTitle)); // Go back to the specific movie's showtimes
+            backToSeatsBtn.addEventListener('click', () => showSeatSelectionPage(currentMovieTitle, currentTheaterName, currentShowtime));
+
+            // Confirm Booking button functionality (on seat selection page)
+            confirmBookingBtn.addEventListener('click', () => {
+                if (selectedSeats.size === 0) {
+                    seatSelectionErrorMessage.classList.remove('hidden');
+                } else {
+                    seatSelectionErrorMessage.classList.add('hidden');
+                    showPaymentPage();
+                }
+            });
+
+            // Payment option selection
+            paymentOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    paymentOptions.forEach(opt => opt.classList.remove('selected-payment'));
+                    option.classList.add('selected-payment');
+                    selectedPaymentMethod = option.dataset.paymentMethod;
+                    paymentStatusMessage.classList.add('hidden'); // Hide status when a new option is selected
+
+                    // Show relevant payment detail form
+                    hideAllPaymentDetailForms();
+                    if (selectedPaymentMethod === 'upi') {
+                        upiDetailsDiv.classList.remove('hidden');
+                    } else if (selectedPaymentMethod === 'card') {
+                        cardDetailsDiv.classList.remove('hidden');
+                    } else if (selectedPaymentMethod === 'netbanking') {
+                        netbankingDetailsDiv.classList.remove('hidden');
+                    } else if (selectedPaymentMethod === 'wallet') {
+                        walletDetailsDiv.classList.remove('hidden');
+                    }
+                });
+            });
+
+            // Validation function for payment details
+            function validatePaymentDetails() {
+                if (!selectedPaymentMethod) {
+                    paymentStatusMessage.textContent = "Please select a payment method.";
+                    paymentStatusMessage.classList.remove('hidden');
+                    paymentStatusMessage.classList.remove('bg-green-700', 'bg-blue-700');
+                    paymentStatusMessage.classList.add('bg-red-700');
+                    return false;
+                }
+
+                let isValid = true;
+                let errorMessage = "";
+
+                switch (selectedPaymentMethod) {
+                    case 'upi':
+                        if (upiIdInput.value.trim() === '') {
+                            errorMessage = "Please enter your UPI ID.";
+                            isValid = false;
+                        }
+                        break;
+                    case 'card':
+                        if (cardNumberInput.value.trim() === '' || expiryDateInput.value.trim() === '' || cvvInput.value.trim() === '' || cardholderNameInput.value.trim() === '') {
+                            errorMessage = "Please fill in all card details.";
+                            isValid = false;
+                        }
+                        // Basic regex for card number (16 digits)
+                        if (!/^\d{16}$/.test(cardNumberInput.value.trim().replace(/\s/g, ''))) {
+                             errorMessage = "Please enter a valid 16-digit card number.";
+                             isValid = false;
+                        }
+                        // Basic regex for expiry date (MM/YY)
+                        if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiryDateInput.value.trim())) {
+                             errorMessage = "Please enter a valid expiry date (MM/YY).";
+                             isValid = false;
+                        }
+                        // Basic regex for CVV (3 or 4 digits)
+                        if (!/^\d{3,4}$/.test(cvvInput.value.trim())) {
+                             errorMessage = "Please enter a valid 3 or 4-digit CVV.";
+                             isValid = false;
+                        }
+                        break;
+                    case 'netbanking':
+                        if (bankSelect.value === '') {
+                            errorMessage = "Please select a bank.";
+                            isValid = false;
+                        }
+                        break;
+                    case 'wallet':
+                        if (walletSelect.value === '') {
+                            errorMessage = "Please select a wallet provider.";
+                            isValid = false;
+                        }
+                        break;
+                }
+
+                if (!isValid) {
+                    paymentStatusMessage.textContent = errorMessage;
+                    paymentStatusMessage.classList.remove('hidden');
+                    paymentStatusMessage.classList.remove('bg-green-700', 'bg-blue-700');
+                    paymentStatusMessage.classList.add('bg-red-700');
+                }
+                return isValid;
+            }
+
+
+            // Pay Now button functionality
+            payNowBtn.addEventListener('click', () => {
+                if (!validatePaymentDetails()) {
+                    return; // Stop if validation fails
+                }
+
+                // Simulate payment processing
+                let processingMessage = `Processing payment via ${selectedPaymentMethod.toUpperCase()}...`;
+                if (selectedPaymentMethod === 'upi') {
+                    processingMessage = `Processing UPI payment for ${upiIdInput.value.trim()}...`;
+                } else if (selectedPaymentMethod === 'card') {
+                    processingMessage = `Processing card payment...`;
+                } else if (selectedPaymentMethod === 'netbanking') {
+                    processingMessage = `Redirecting to ${bankSelect.options[bankSelect.selectedIndex].text} for Net Banking...`;
+                } else if (selectedPaymentMethod === 'wallet') {
+                    processingMessage = `Opening ${walletSelect.options[walletSelect.selectedIndex].text} wallet...`;
+                }
+
+                paymentStatusMessage.textContent = processingMessage;
+                paymentStatusMessage.classList.remove('hidden');
+                paymentStatusMessage.classList.remove('bg-red-700');
+                paymentStatusMessage.classList.add('bg-blue-700'); // Indicate processing
+
+                setTimeout(() => {
+                    // Simulate success or failure
+                    if (Math.random() > 0.1) { // 90% chance of success
+                        paymentStatusMessage.textContent = `Payment Successful! Your booking is confirmed. Enjoy your movie!`;
+                        paymentStatusMessage.classList.remove('bg-blue-700');
+                        paymentStatusMessage.classList.add('bg-green-700');
+
+                        // Clear input fields after successful booking
+                        upiIdInput.value = '';
+                        cardNumberInput.value = '';
+                        expiryDateInput.value = '';
+                        cvvInput.value = '';
+                        cardholderNameInput.value = '';
+                        bankSelect.value = '';
+                        walletSelect.value = '';
+                        selectedPaymentMethod = ''; // Reset selected method
+                        hideAllPaymentDetailForms(); // Hide detail forms
+
+                        // Redirect to a "Thank You" page or home after a delay
+                        setTimeout(() => {
+                            showHomepage(); // Go back to home after successful booking
+                        }, 3000);
+
+                        // Simulate "booking" selected seats by making them unavailable on seat map
+                        // Note: This won't visually persist if you go back to seat selection in this demo
+                        selectedSeats.forEach(seatId => {
+                            const seatElement = Array.from(seatMap.children).find(seat => seat.textContent === seatId);
+                            if (seatElement) {
+                                seatElement.classList.remove('selected');
+                                seatElement.classList.add('booked');
+                                seatElement.removeEventListener('click', () => toggleSeatSelection(seatElement, seatId)); // Remove listener
+                            }
+                        });
+                        selectedSeats.clear(); // Clear selected for next booking
+                        updateTotalPrice(); // Reset price display
+                    } else {
+                        paymentStatusMessage.textContent = `Payment Failed. Please try again.`;
+                        paymentStatusMessage.classList.remove('bg-blue-700');
+                        paymentStatusMessage.classList.add('bg-red-700');
+                    }
+                }, 2000); // Simulate 2-second payment processing
+            });
+        });
+    </script>
+</body>
+</html>
